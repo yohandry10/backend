@@ -13,7 +13,11 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+// Aquí añades el middleware de CORS
+app.use(cors({
+  origin: 'https://warmiventures.vercel.app/', // Cambia esto al dominio real de tu frontend
+}));
+
 app.use(express.json());
 
 // Middlewares de subida de archivos
