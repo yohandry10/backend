@@ -1,26 +1,14 @@
+// backend/controllers/profileController.js
 const User = require('../models/User');
-const multer = require('multer');
-const path = require('path');
 
-// Configuración de multer para almacenar imágenes
-const storage = multer.diskStorage({
-  destination: './uploads/', // Carpeta para almacenar las imágenes
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage });
-
-// Actualizar perfil de usuario
 exports.updateProfile = async (req, res) => {
+  console.log('Datos recibidos para actualizar perfil:', req.body);
   const { name, email, phone, location, bio, interests } = req.body;
   const avatar = req.file ? `/uploads/${req.file.filename}` : undefined;
 
   try {
-    const userId = req.user.id; // Obtener el id del usuario desde el token
+    const userId = req.user.id;
 
-    // Crear un objeto con los datos a actualizar
     const updateData = { name, email, phone, location, bio, interests };
     if (avatar) {
       updateData.avatar = avatar;
@@ -32,6 +20,8 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
+    console.log('Usuario actualizado:', updatedUser);
+
     res.status(200).json({ message: 'Perfil actualizado exitosamente', user: updatedUser });
   } catch (error) {
     console.error('Error al actualizar el perfil:', error);
@@ -39,4 +29,11 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-exports.uploadAvatar = upload.single('avatar');
+exports.uploadAvatar = require('multer')({
+  storage: require('multer').diskStorage({
+    destination: './uploads/',
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}-${file.originalname}`);
+    },
+  }),
+}).single('avatar');

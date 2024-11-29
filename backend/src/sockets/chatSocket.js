@@ -1,5 +1,6 @@
 // /src/sockets/chatSocket.js
-
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 const socketio = require('socket.io');
 
 function chatSocket(server) {
@@ -10,16 +11,37 @@ function chatSocket(server) {
     }
   });
 
+  io.use(async (socket, next) => {
+    try {
+      const token = socket.handshake.query.token;
+      if (!token) {
+        return next(new Error('No autorizado'));
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return next(new Error('No autorizado'));
+      }
+      socket.user = user;
+      next();
+    } catch (err) {
+      next(new Error('No autorizado'));
+    }
+  });
+
   io.on('connection', (socket) => {
     console.log('New client connected', socket.id);
 
-    // Manejar evento para enviar mensajes
-    socket.on('sendMessage', (message) => {
-      // Emitir el mensaje a todos los clientes conectados
-      io.emit('message', message);
+    socket.on('sendMessage', async (message) => {
+      const newMessage = {
+        sender: socket.user._id,
+        content: message.content,
+        timestamp: new Date().toISOString(),
+        recipients: message.recipients,
+      };
+      io.emit('message', newMessage);
     });
 
-    // Manejar la desconexión del cliente
     socket.on('disconnect', () => {
       console.log('Client disconnected', socket.id);
     });
