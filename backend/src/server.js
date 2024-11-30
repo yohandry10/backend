@@ -15,11 +15,12 @@ const app = express();
 
 // Aquí añades el middleware de CORS
 app.use(cors({
-    origin: 'https://warmiventures.vercel.app/', // Cambia esto por tu dominio en Vercel
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
-  
+  origin: 'https://warmiventures.vercel.app', // Cambia esto si es necesario
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+
 
 app.use(express.json());
 
@@ -33,3 +34,4 @@ app.use('/api/profile', profileRoutes); // Añade la ruta de perfil
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
