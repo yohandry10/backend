@@ -1,8 +1,8 @@
-const User = require('../models/User'); // Correct import of the User model
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const User = require('../models/User'); // Importar el modelo de usuario
+const bcrypt = require('bcryptjs'); // Cambiado de bcrypt a bcryptjs
+const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 
-// LOGIN FUNCTION
+// FUNCIÓN LOGIN
 const login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -13,16 +13,16 @@ const login = async (req, res) => {
     }
 
     try {
-        console.log('Attempting login for:', email);
+        console.log('Intentando inicio de sesión para:', email);
 
         // Verificar si el usuario existe
         const user = await User.findOne({ email });
         if (!user) {
-            console.log('User not found:', email);
+            console.log('Usuario no encontrado:', email);
             return res.status(401).json({ message: 'Usuario o contraseña incorrectos.' });
         }
 
-        console.log('User found:', user);
+        console.log('Usuario encontrado:', user);
 
         // Validar la contraseña
         if (password.startsWith('$2b$')) {
@@ -31,7 +31,7 @@ const login = async (req, res) => {
         }
 
         console.log('Contraseña ingresada:', password);
-        console.log('Contraseña hasheada en la base de datos:', user.password);
+        console.log('Contraseña almacenada en la base de datos:', user.password);
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -39,20 +39,25 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Usuario o contraseña incorrectos.' });
         }
 
-        console.log('Password validated successfully.');
+        console.log('Contraseña validada con éxito.');
 
         // Generar un token JWT
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-            expiresIn: '1h',
-        });
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET, // Asegúrate de que JWT_SECRET esté definido en tu archivo .env
+            { expiresIn: '1h' }
+        );
 
-        console.log('Login successful for user:', email);
-        return res.status(200).json({ message: 'Inicio de sesión exitoso', role: user.role, token });
+        console.log('Inicio de sesión exitoso para el usuario:', email);
+        return res.status(200).json({
+            message: 'Inicio de sesión exitoso',
+            role: user.role,
+            token,
+        });
     } catch (error) {
-        console.error('Error during login:', error);
+        console.error('Error durante el inicio de sesión:', error);
         return res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
-
 
 module.exports = login;
