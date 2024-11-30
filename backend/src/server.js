@@ -15,8 +15,11 @@ const app = express();
 
 // Aquí añades el middleware de CORS
 app.use(cors({
-  origin: 'https://warmiventures.vercel.app/', // Cambia esto al dominio real de tu frontend
-}));
+    origin: 'https://warmiventures.vercel.app/', // Cambia esto por tu dominio en Vercel
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+  
 
 app.use(express.json());
 
